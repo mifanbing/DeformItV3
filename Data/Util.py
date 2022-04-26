@@ -209,52 +209,76 @@ class Util:
       indices2 = self.findStartAndEnd(contourPoints, shoulderPoint, shoulderPoint, elbowPoint)
       indexA = indices2[0][0]
       indexB = indices2[1][0]
+      pointA = contourPoints[indexA]
+      pointB = contourPoints[indexB]
       
+      #construct upper contour
       contourUpper = []
-      startPointCutContour = self.getInterpolatePoints(contourPoints[indexB], contourPoints[indexA])
+      startPointCutContour = self.getInterpolatePoints(pointB, pointA)
       contourUpper.extend(startPointCutContour)
       
-      contourUpper.extend(contourPoints[indexA:indexM1])
-      elbowPointCutContour = self.getInterpolatePoints(contourPoints[indexM1], contourPoints[indexM2])
-      contourUpper.extend(elbowPointCutContour)
+      pointM3 = self.rotatePoint(pointM1, elbowPoint, angleLower/2)
+      pointM4 = self.rotatePoint(pointM2, elbowPoint, angleLower/2)
+      pointM3Rotate = self.rotatePoint(pointM3, shoulderPoint, angleUpper)
+      pointM4Rotate = self.rotatePoint(pointM4, shoulderPoint, angleUpper)
       
-      contourUpper.extend(contourPoints[indexM2:indexB])
+      inputControlPoints = [pointA, pointB, pointM1, pointM2]
+      outputControlPoints = [pointA, pointB, pointM3Rotate, pointM4Rotate]
+      for point in contourPoints[indexA: indexM1]:
+          pointMap = self.findMapPoint(point, inputControlPoints, outputControlPoints)
+          contourUpper.append(pointMap)
 
-      indices3 = self.findElbowStartAndEnd2(contourPoints, lineUpper, lineLower, angleLower/1.2, isLeft)
-      indexM3 = indices3[0][0]
-      indexM4 = indices3[1][0]
-      pointM3 = contourPoints[indexM3]
-      pointM4 = contourPoints[indexM4]
+      elbowCutContour = self.getInterpolatePoints(pointM3Rotate, pointM4Rotate)
+      contourUpper.extend(elbowCutContour)          
+
+      for point in contourPoints[indexM2: indexB]:
+          pointMap = self.findMapPoint(point, inputControlPoints, outputControlPoints)
+          contourUpper.append(pointMap)      
  
-      contourUpperMapped = []
-      contourUpperMapped.extend(startPointCutContour)
-      
-      contourUpperMapped.extend(contourPoints[indexA:indexM3])
-      elbowPointCutContour = self.getInterpolatePoints(contourPoints[indexM3], contourPoints[indexM4])
-      contourUpperMapped.extend(elbowPointCutContour)
-      
-      contourUpperMapped.extend(contourPoints[indexM4:indexB])
-      controlPointsInput = [contourPoints[indexA], contourPoints[indexB], pointM2, pointM1]
-      controlPointsOutput = [contourPoints[indexA], contourPoints[indexB], pointM4, pointM3]
-      self.drawUpperContour(contourUpperMapped, controlPointsOutput, controlPointsInput)
-      
-      wElbow, hElbow = elbowPoint
-      wHand, hHand = handPoint
-      wHandRotate = int((wHand - wElbow) * math.cos(angleLower) - (hHand - hElbow) * math.sin(angleLower) + wElbow)
-      hHandRotate = int((wHand - wElbow) * math.sin(angleLower) + (hHand - hElbow) * math.cos(angleLower) + hElbow)
-      
-      controlPointsInput = [pointM1, pointM2, handPoint]
-      controlPointsOutput = [pointM3, pointM4, (wHandRotate, hHandRotate)]
-  
+      contourUpperRefine = []
+      for i in range(0, len(contourUpper) - 1):
+          for point in self.getInterpolatePoints(contourUpper[i], contourUpper[i+1]):
+              contourUpperRefine.append(point)
+              
+      for point in self.getInterpolatePoints(contourUpper[-1], contourUpper[0]):
+          contourUpperRefine.append(point)
+              
+      self.drawUpperContour(contourUpperRefine, outputControlPoints, inputControlPoints)
+      #construct lower contour 
       contourLower = []
-      contourLower.extend(elbowPointCutContour)
+      elbowCutContour = self.getInterpolatePoints(pointM4Rotate, pointM3Rotate)
+      contourLower.extend(elbowCutContour)  
       
-      for point in contourPoints[indexM3:indexM4]:
-          contourLower.append(self.mapPoint(point, controlPointsInput, controlPointsOutput))
+      elbowPointRotate = self.rotatePoint(elbowPoint, shoulderPoint, angleUpper)
+      handPointRotate1 = self.rotatePoint(handPoint, shoulderPoint, angleUpper)
+      handPointRotate2 = self.rotatePoint(handPointRotate1, elbowPointRotate, angleLower)
+      inputUpperControlPoints = [pointM1, pointM2, handPoint]
+      outputUpperControlPoints = [pointM3Rotate, pointM4Rotate, handPointRotate2]
       
-      self.drawLowerContour(contourLower, controlPointsOutput, controlPointsInput)  
+      for point in contourPoints[indexM1: indexM2]:
+          pointMap = self.mapPoint(point, inputUpperControlPoints, outputUpperControlPoints)
+          contourLower.append(pointMap) 
       
-      return contourUpperMapped, contourLower
+      contourLowerRefine = []
+      for i in range(0, len(contourLower) - 1):
+          for point in self.getInterpolatePoints(contourLower[i], contourLower[i+1]):
+              contourLowerRefine.append(point)
+              
+      for point in self.getInterpolatePoints(contourLower[-1], contourLower[0]):
+          contourLowerRefine.append(point)
+          
+      self.drawLowerContour(contourLowerRefine, outputUpperControlPoints, inputUpperControlPoints)  
+      
+      return contourUpperRefine, contourLowerRefine 
+      
+    def rotatePoint(self, point, center, angle):
+        wCenter, hCenter = center
+        w, h = point
+        wRotate = int((w - wCenter) * math.cos(angle) - (h - hCenter) * math.sin(angle) + wCenter)
+        hRotate = int((w - wCenter) * math.sin(angle) + (h - hCenter) * math.cos(angle) + hCenter)
+        
+        return (wRotate, hRotate)
+        
     
     def drawUpperContour(self, contour, controlPointsOutput, controlPointsInput):
       hMin = self.inHeight
@@ -277,7 +301,7 @@ class Util:
             if w > wMax:
               wMax = w
         for w in range(wMin, wMax):
-          wInput, hInput = self.findMapPoint((w, h), controlPointsInput, controlPointsOutput)
+          wInput, hInput = self.findMapPoint((w, h), controlPointsOutput, controlPointsInput)
           self.workImage[h, w] = self.inputImage[hInput, wInput]          
     
     def drawLowerContour(self, contour, controlPointsOutput, controlPointsInput):

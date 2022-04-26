@@ -12,7 +12,7 @@ class DataLoader:
       (0.419,	0.264),  # 2: left shoulder
       (0.356,	0.242), # 3: left elbow
       (0.245,	0.12), # 4: left hand
-      (0.60,	0.271), # 5: right shoulder
+      (0.58,	0.271), # 5: right shoulder
       (0.644,	0.254), # 6: right elbow
       (0.749,	0.14), # 7: right hand
       (0.442,	0.63), # 8: left waist

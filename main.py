@@ -29,27 +29,27 @@ util.drawContour(bodyContour, workImage, dataLoader.inputImageResize)
 #     workImage[hh, ww] = (0, 0, 255)
      
 #util.drawContour(inputContourPoints, workImage, dataLoader.inputImageResize)
-contourUpperLeftArm, contourLowerLeftArm = util.doMap(inputContourPoints, poseLines[3], poseLines[4], 0, math.pi/4, True) 
+contourUpperLeftArm, contourLowerLeftArm = util.doMap(inputContourPoints, poseLines[3], poseLines[4], math.pi/6, math.pi/2.7, True) 
 
-for point in contourUpperLeftArm:
-    ww, hh = point
-    workImage[hh, ww] = (0, 255, 0)
+# for point in contourUpperLeftArm:
+#     ww, hh = point
+#     workImage[hh, ww] = (0, 255, 0)
 
-for point in contourLowerLeftArm:
-    ww, hh = point
-    workImage[hh, ww] = (0, 0, 255)
+# for point in contourLowerLeftArm:
+#     ww, hh = point
+#     workImage[hh, ww] = (0, 0, 255)
     
-contourUpperRightArm, contourLowerRightArm = util.doMap(inputContourPoints, poseLines[5], poseLines[6], 0, -math.pi/4, False) 
+contourUpperRightArm, contourLowerRightArm = util.doMap(inputContourPoints, poseLines[5], poseLines[6], -math.pi/8, -math.pi/2.5, False) 
 
-for point in contourUpperRightArm:
-    ww, hh = point
-    workImage[hh, ww] = (0, 255, 0)
+# for point in contourUpperRightArm:
+#     ww, hh = point
+#     workImage[hh, ww] = (0, 255, 0)
 
-for point in contourLowerRightArm:
-    ww, hh = point
-    workImage[hh, ww] = (0, 0, 255)
+# for point in contourLowerRightArm:
+#     ww, hh = point
+#     workImage[hh, ww] = (0, 0, 255)
     
-contourUpperLeftLeg, contourLowerLeftLeg = util.doMap(inputContourPoints, poseLines[8], poseLines[9], 0, math.pi/6, True) 
+contourUpperLeftLeg, contourLowerLeftLeg = util.doMap(inputContourPoints, poseLines[8], poseLines[9], -math.pi/12, 0, True) 
 
 # for point in contourUpperLeftLeg:
 #     ww, hh = point
@@ -59,7 +59,7 @@ contourUpperLeftLeg, contourLowerLeftLeg = util.doMap(inputContourPoints, poseLi
 #     ww, hh = point
 #     workImage[hh, ww] = (0, 0, 255)
     
-contourUpperRightLeg, contourLowerRightLeg = util.doMap(inputContourPoints, poseLines[11], poseLines[12], 0, -math.pi/6, False) 
+contourUpperRightLeg, contourLowerRightLeg = util.doMap(inputContourPoints, poseLines[11], poseLines[12], math.pi/3, -math.pi/4, False) 
 
 # for point in contourUpperRightLeg:
 #     ww, hh = point
